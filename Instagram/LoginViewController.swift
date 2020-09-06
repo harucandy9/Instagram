@@ -8,7 +8,7 @@
 
 import UIKit
 import Firebase
-
+import SVProgressHUD
 
 class LoginViewController: UIViewController {
 
@@ -18,6 +18,27 @@ class LoginViewController: UIViewController {
     
     //ログイン時
     @IBAction func handleLoginButton(_ sender: Any) {
+        if let address = mailAdressTextField.text, let password = passwordTextField .text {
+            if address.isEmpty || password.isEmpty{
+                SVProgressHUD.showError(withStatus: "必須項目を入力してください")
+                return
+            }
+            
+            SVProgressHUD.show()
+            
+            
+            Auth.auth().signIn(withEmail: address, password: password){ authResult , error in
+                if let error = error{
+                    print("DEBUG_PRINT: " + error.localizedDescription)
+                    return
+                }
+                print("DEBUG_PRINT: ログインに成功しました。")
+                //画面を閉じてタブ画面に戻る
+                self.dismiss(animated: true ,completion: nil)
+            }
+            
+            SVProgressHUD.dismiss()
+        }
     }
     //アカウント作成時
     @IBAction func handleCreateAccountButton(_ sender: Any) {
@@ -25,6 +46,7 @@ class LoginViewController: UIViewController {
             let displayName = displayNameTextField.text{
             if address.isEmpty || password.isEmpty || displayName.isEmpty{
                 print("DEBUG_PRINT: 何かが空文字です。")
+                SVProgressHUD.showError(withStatus: "必要項目を入力してください")
                 return
             }
             
@@ -32,8 +54,12 @@ class LoginViewController: UIViewController {
             Auth.auth().createUser(withEmail: address, password: password){ authResult, error in
                 if let error = error {
                     print("DEBUG_PRINT: " + error.localizedDescription)
+                    SVProgressHUD.showError(withStatus: "必要項目を入力して下さい")
                     return
                 }
+                
+                SVProgressHUD.show()
+                
                 print("DEBUG_PRINT: ユーザー作成に成功しました。")
                 
                 //表示名を設定する
@@ -45,9 +71,11 @@ class LoginViewController: UIViewController {
                         if let error = error {
                             //プロフィールの更新でエラーが発生
                             print("DEBUG_PRINT: " + error.localizedDescription)
+                            SVProgressHUD.showError(withStatus: "表示名の設定に失敗しました。")
                             return
                         }
                         print("DEBUG_PRINT: [displayName = \(user.displayName!)]の設定に成功しました。")
+                        SVProgressHUD.dismiss()
                         
                         //画面を閉じてタブ画面に戻る
                         self.dismiss(animated: true, completion: nil)
